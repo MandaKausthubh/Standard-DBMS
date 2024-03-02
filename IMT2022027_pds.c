@@ -131,9 +131,31 @@ int PDS_put_parent_rec_by_key(int key, void* rec) {
 }
 
 
-int PDS_put_child_rec_by_key(int key, void* rec);
-int PDS_put_link_by_key(int p_key, int c_key);
-int PDS_get_parent_by_key(int p_key, void* rec);
+int PDS_put_child_rec_by_key(int key, void* rec) {
+    if(pds_repo_info.pds_repo_status == PDS_REPO_OPEN) {
+        FILE* fptr = pds_repo_info.child_data_file;
+        fseek(fptr, 0, SEEK_END);
+        fwrite(&key, sizeof(int), 1, fptr);
+        fwrite(rec, pds_repo_info.pds_child_size, 1, fptr);
+        return PDS_SUCCESS;
+    }else return PDS_REPO_NOT_OPEN;
+}
+
+int PDS_put_link_by_key(int p_key, int c_key) {
+    if(pds_repo_info.pds_repo_status == PDS_REPO_OPEN) {
+        FILE* fptr = pds_repo_info.link_data_file;
+        fseek(fptr, 0, SEEK_END);
+        struct Link newLink;
+        newLink.parent = p_key;
+        newLink.child = c_key;
+
+        fwrite(&newLink, sizeof(struct Link), 1, fptr);
+        return PDS_SUCCESS;
+    } else  return PDS_REPO_NOT_OPEN;
+}
+
+int PDS_get_parent_by_key(int p_key, void* rec) ;
+
 int PDS_get_child_by_key(int c_key, void* rec);
 int PDS_get_parent_by_ndx_key(void* key, void* rec, int (*matcher)(void* rec, void* key), int io_count);
 int PDS_get_links(int p_key, int arr[], int count);
