@@ -93,11 +93,77 @@ int PDS_LoadNDX() {
 }
 
 
-int PDS_put_parent_rec_by_key(int key, void* rec);
+int PDS_put_parent_rec_by_key(int key, void* rec) {
+    if(pds_repo_info.pds_repo_status == PDS_REPO_OPEN) {
+        struct BST_Node* return_val = bst_search(pds_repo_info.pds_bst, key);
+        if(return_val) {
+            if(((struct PDS_NdxInfo*)(return_val->data))-> is_deleted == 0) {
+                return PDS_FAILURE;
+            } else {
+                ((struct PDS_NdxInfo*)(return_val->data))-> is_deleted = 0;
+                int offset = ((struct PDS_NdxInfo*)(return_val->data))->offset;
+                FILE* fptr = pds_repo_info.parent_data_file;
+                fseek(fptr, offset+sizeof(int), SEEK_SET);
+                
+                int valid = 1;
+                fwrite(&valid, sizeof(int), 1, fptr);
+
+                return PDS_SUCCESS;
+            }
+        } else {
+            FILE* fptr = pds_repo_info.parent_data_file;
+            fseek(fptr, 0, SEEK_END);
+            int valid = 1;
+            int offset = ftell(fptr);
+            fwrite(&key, sizeof(int), 1, fptr);
+            fwrite(&valid, sizeof(int), 1, fptr);
+            fwrite(rec, pds_repo_info.pds_parent_size, 1, fptr);
+
+            struct PDS_NdxInfo repo;
+            repo.key = key;
+            repo.offset = offset;
+            repo.is_deleted = 0;
+            
+            bst_add_node(&(pds_repo_info.pds_bst), key, rec);
+            return PDS_SUCCESS;
+        }
+    } else return PDS_REPO_NOT_OPEN;
+}
+
+
 int PDS_put_child_rec_by_key(int key, void* rec);
 int PDS_put_link_by_key(int p_key, int c_key);
 int PDS_get_parent_by_key(int p_key, void* rec);
 int PDS_get_child_by_key(int c_key, void* rec);
 int PDS_get_parent_by_ndx_key(void* key, void* rec, int (*matcher)(void* rec, void* key), int io_count);
 int PDS_get_links(int p_key, int arr[], int count);
-int PDS_Close();
+
+void PrintIntoFile(struct BST_Node* root, FILE* fptr) {
+    if(root) {
+        PrintIntoFile(root->left_child, fptr);
+        PrintIntoFile(root->right_child, fptr);
+        fwrite(root->data, sizeof(struct PDS_NdxInfo), 1, fptr);
+    }
+}
+
+int PDS_Close() {
+    if(pds_repo_info.pds_repo_status == PDS_REPO_OPEN) {
+        char FileName[30]; strcpy(FileName, pds_repo_info.pds_name);
+        strcat(FileName, ".ndx");
+
+        FILE* fptr = fopen(FileName, "wb+");
+
+        fwrite(&(pds_repo_info.rec_count_parents), sizeof(int), 1, fptr);
+
+        PrintIntoFile(pds_repo_info.pds_bst, fptr);
+
+        fclose(pds_repo_info.ndx_file);
+        fclose(pds_repo_info.parent_data_file);
+        fclose(pds_repo_info.ndx_file);
+        fclose(pds_repo_info.child_data_file);
+        fclose(fptr);
+
+        pds_repo_info.pds_repo_status = PDS_REPO_CLOSED;
+        return PDS_SUCCESS;
+    } else return PDS_REPO_NOT_OPEN;
+}
