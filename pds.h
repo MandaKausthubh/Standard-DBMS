@@ -22,10 +22,15 @@ struct PDS_NdxInfo{
 struct Repo_Info {
     char pds_name[30];
     int pds_repo_status;
+
+    int pds_parent_size;
+    int pds_child_size;
+
     FILE* ndx_file;
     FILE* parent_data_file;
     FILE* child_data_file;
     FILE* link_data_file;
+
     int rec_count_parents;
     int rec_count_children;
     int rec_count_links;
