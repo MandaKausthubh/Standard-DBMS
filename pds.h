@@ -13,7 +13,7 @@
 #define PDS_FILE_ERROR 3
 
 #include <stdio.h>
-#include "pds_bst.h"
+#include "bst.h"
 
 struct PDS_NdxInfo{
     int key, offset, is_deleted;
