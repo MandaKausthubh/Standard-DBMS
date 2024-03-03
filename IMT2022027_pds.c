@@ -219,7 +219,28 @@ int PDS_get_links(int p_key, int arr[], int* count) {
         }
         return PDS_SUCCESS;
     } else return PDS_REPO_NOT_OPEN;
+}
 
+int PDS_delete_parent_with_key(int p_key) {
+    if(pds_repo_info.pds_repo_status == PDS_REPO_OPEN) {
+        struct BST_Node* temp = bst_search(pds_repo_info.pds_bst, p_key);
+        
+        if(temp) {
+            struct PDS_NdxInfo* result = (struct PDS_NdxInfo*) temp->data;
+            if(result->is_deleted == 1) {
+                return PDS_REC_NOT_FOUND;
+            }else {
+                int offset = result->offset; int valid = 0;
+                FILE* fptr = pds_repo_info.parent_data_file;
+                fseek(fptr, offset + sizeof(int), SEEK_SET);
+                fwrite(&valid, sizeof(int), 1, SEEK_SET);
+                result->is_deleted = 1;
+
+                return PDS_SUCCESS;
+            }
+        } else return PDS_REC_NOT_FOUND;
+
+    } else return PDS_REPO_NOT_OPEN;
 }
 
 void PrintIntoFile(struct BST_Node* root, FILE* fptr) {
