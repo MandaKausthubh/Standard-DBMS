@@ -10,10 +10,10 @@ struct Repo_Info pds_repo_info;
 
 int PDS_Create(char *parent_repo_name, char* child_repo_name) {
     char parent_name[30] = "", child_name[30] = "", parent_ndx[30] = "", link_name[20] = "";
-    strcpy(parent_name, parent_repo_name); strcpy(parent_name, ".dat");
-    strcpy(parent_ndx, parent_repo_name); strcpy(parent_ndx, ".ndx");
-    strcpy(link_name, parent_repo_name);strcpy(link_name, child_repo_name); strcpy(parent_name, ".dat");
-    strcpy(child_name, child_repo_name); strcpy(child_name, ".dat");
+    strcpy(parent_name, parent_repo_name); strcat(parent_name, ".dat");
+    strcpy(parent_ndx, parent_repo_name); strcat(parent_ndx, ".ndx");
+    strcpy(link_name, parent_repo_name);strcat(link_name, child_repo_name); strcat(link_name, ".dat");
+    strcpy(child_name, child_repo_name); strcat(child_name, ".dat");
     
     FILE* parent, *ndx, *child, *link;
 
@@ -39,10 +39,10 @@ int PDS_Create(char *parent_repo_name, char* child_repo_name) {
 int PDS_Open(char *parent_repo_name, char* child_repo_name, int parent_rec_size, int child_rec_size) {
 
     char parent_name[30] = "", child_name[30] = "", parent_ndx[30] = "", link_name[20] = "";
-    strcpy(parent_name, parent_repo_name); strcpy(parent_name, ".dat");
-    strcpy(parent_ndx, parent_repo_name); strcpy(parent_ndx, ".ndx");
-    strcpy(link_name, parent_repo_name);strcpy(link_name, child_repo_name); strcpy(parent_name, ".dat");
-    strcpy(child_name, child_repo_name); strcpy(child_name, ".dat");
+    strcpy(parent_name, parent_repo_name); strcat(parent_name, ".dat");
+    strcpy(parent_ndx, parent_repo_name); strcat(parent_ndx, ".ndx");
+    strcpy(link_name, parent_repo_name);strcat(link_name, child_repo_name); strcat(link_name, ".dat");
+    strcpy(child_name, child_repo_name); strcat(child_name, ".dat");
     
     FILE* parent, *ndx, *child, *link;
 
@@ -209,12 +209,13 @@ int PDS_get_parent_by_non_ndx_key(void* p_key, void* rec, int (*matcher)(void* r
 
 int PDS_get_links(int p_key, int arr[], int* count) {
     if(pds_repo_info.pds_repo_status == PDS_REPO_OPEN) {
-        FILE* fptr = pds_repo_info.child_data_file;
+        FILE* fptr = pds_repo_info.link_data_file;
         (*count) = 0;
         fseek(fptr, 0, SEEK_SET);
         while(!feof(fptr)) {
             struct Link temp;
             fread(&temp, sizeof(struct Link), 1, fptr);
+            printf("Reading: %d %d\n", temp.parent, temp.child);
             if(temp.parent == p_key) {arr[(*count)++] = temp.child;}
         }
         return PDS_SUCCESS;

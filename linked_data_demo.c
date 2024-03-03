@@ -38,8 +38,10 @@ void show_menu()
 
 void setup_data()
 {
-    PDS_Create("Fighter", "Missile");
-    PDS_Open("Fighter", "Missile", sizeof(struct FighterJet), sizeof(struct Missile));
+    int status = PDS_Create("Fighter", "Missile");
+    if(status != PDS_SUCCESS) {printf("Unable to create files\n");}
+    status = PDS_Open("Fighter", "Missile", sizeof(struct FighterJet), sizeof(struct Missile));
+    if(status != PDS_SUCCESS) {printf("Unable to open files\n");}
     // statically create 10 parent and 10 child records individually
     for(int i = 0; i < 10; i++ ){
         struct FighterJet newFighter;
@@ -86,7 +88,7 @@ void process_option1()
     printf("Enter parent key and child key for linking: ");
     scanf("%d%d", &parent_key, &child_key);
     // TODO: Call appropriate PDS functions here to link the two records
-    int status = add_hardpoint(child_key, parent_key);
+    int status = add_hardpoint(parent_key, child_key);
     if(status != HARDPOINT_SUCCESS) {printf("Adding new hardpoint\n");}
 }
 
@@ -110,5 +112,5 @@ void process_option2()
         search_missile(arr[i], &newMissile);
         print_missile(&newMissile);
     }
-    printf("Exiting Search\n");
+    printf("Exiting Search: %d\n", count);
 }

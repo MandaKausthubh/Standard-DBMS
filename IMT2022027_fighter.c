@@ -47,7 +47,7 @@ int add_fighter( struct FighterJet *c )
 		fprintf(stderr, "Unable to add fighter with key %d. Error %d", c->fighter_id, status );
 		return FIGHTER_FAIL;
 	}
-	return FIGHTER_FAIL;
+	return FIGHTER_SUCCESS;
 }
 
 
