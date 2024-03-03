@@ -154,9 +154,28 @@ int PDS_put_link_by_key(int p_key, int c_key) {
     } else  return PDS_REPO_NOT_OPEN;
 }
 
-int PDS_get_parent_by_key(int p_key, void* rec) ;
+int PDS_get_parent_by_key(int p_key, void* rec) {
+    if(pds_repo_info.pds_repo_status == PDS_REPO_OPEN) {
+        struct PDS_NdxInfo* info = (struct PDS_NdxInfo*)(bst_search(pds_repo_info.pds_bst, p_key)->data);
+        if(info) {
+            if(info->is_deleted == 1) return PDS_REC_NOT_FOUND;
+            else {
+                int offset = info->offset;
+                FILE* fptr = pds_repo_info.parent_data_file;
+                fseek(fptr, offset+2*sizeof(int), SEEK_SET);
+                fread(rec, pds_repo_info.pds_parent_size, 1, fptr);
+                return PDS_SUCCESS;
+            }
+        } return PDS_REC_NOT_FOUND;
+    } else return PDS_REPO_NOT_OPEN;
+}
 
-int PDS_get_child_by_key(int c_key, void* rec);
+int PDS_get_child_by_key(int c_key, void* rec) {
+    if(pds_repo_info.pds_repo_status == PDS_REPO_OPEN) {
+        
+    }
+}
+
 int PDS_get_parent_by_ndx_key(void* key, void* rec, int (*matcher)(void* rec, void* key), int io_count);
 int PDS_get_links(int p_key, int arr[], int count);
 
