@@ -233,7 +233,7 @@ int PDS_delete_parent_with_key(int p_key) {
                 int offset = result->offset; int valid = 0;
                 FILE* fptr = pds_repo_info.parent_data_file;
                 fseek(fptr, offset + sizeof(int), SEEK_SET);
-                fwrite(&valid, sizeof(int), 1, SEEK_SET);
+                fwrite(&valid, sizeof(int), 1, fptr);
                 result->is_deleted = 1;
 
                 return PDS_SUCCESS;
