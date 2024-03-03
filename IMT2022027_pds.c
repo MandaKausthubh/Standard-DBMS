@@ -172,12 +172,55 @@ int PDS_get_parent_by_key(int p_key, void* rec) {
 
 int PDS_get_child_by_key(int c_key, void* rec) {
     if(pds_repo_info.pds_repo_status == PDS_REPO_OPEN) {
-        
-    }
+        FILE* fptr = pds_repo_info.child_data_file;
+        fseek(fptr, 0, SEEK_SET);
+        while(!feof(fptr)) {
+            int key;
+            fread(&key, sizeof(int), 1, fptr);
+            fread(rec, pds_repo_info.pds_child_size, 1, fptr);
+            if(key == c_key) {
+                return PDS_SUCCESS;
+            }
+        }
+        return PDS_REC_NOT_FOUND;
+    } return PDS_REC_NOT_FOUND;
 }
 
-int PDS_get_parent_by_ndx_key(void* key, void* rec, int (*matcher)(void* rec, void* key), int io_count);
-int PDS_get_links(int p_key, int arr[], int count);
+int PDS_get_parent_by_non_ndx_key(void* p_key, void* rec, int (*matcher)(void* rec, void* key), int* io_count) {
+    if(pds_repo_info.pds_repo_status == PDS_REPO_OPEN) {
+        FILE* fptr = pds_repo_info.parent_data_file;
+        fseek(fptr, 0, SEEK_SET);
+        *(io_count) = 0;
+        while(!feof(fptr)) {
+            int key, valid;
+            fread(&key, sizeof(int), 1, fptr);
+            fread(&valid, sizeof(int), 1, fptr);
+            fread(rec, pds_repo_info.pds_child_size, 1, fptr);
+            if(valid == 1) {
+                if(matcher(rec, p_key)) {
+                    return PDS_SUCCESS;
+                }
+                (*io_count)++;
+            }
+        }
+        return PDS_REC_NOT_FOUND;
+    } else return PDS_REPO_NOT_OPEN;
+}
+
+int PDS_get_links(int p_key, int arr[], int* count) {
+    if(pds_repo_info.pds_repo_status == PDS_REPO_OPEN) {
+        FILE* fptr = pds_repo_info.child_data_file;
+        (*count) = 0;
+        fseek(fptr, 0, SEEK_SET);
+        while(!feof(fptr)) {
+            struct Link temp;
+            fread(&temp, sizeof(struct Link), 1, fptr);
+            if(temp.parent == p_key) {arr[(*count)++] = temp.child;}
+        }
+        return PDS_SUCCESS;
+    } else return PDS_REPO_NOT_OPEN;
+
+}
 
 void PrintIntoFile(struct BST_Node* root, FILE* fptr) {
     if(root) {
@@ -197,6 +240,8 @@ int PDS_Close() {
         fwrite(&(pds_repo_info.rec_count_parents), sizeof(int), 1, fptr);
 
         PrintIntoFile(pds_repo_info.pds_bst, fptr);
+
+        bst_destroy(pds_repo_info.pds_bst);
 
         fclose(pds_repo_info.ndx_file);
         fclose(pds_repo_info.parent_data_file);
