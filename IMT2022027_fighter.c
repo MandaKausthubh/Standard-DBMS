@@ -20,7 +20,6 @@ int store_fighters( char *fighter_data_file )
 }
 
 
-
 void print_fighter( struct FighterJet *c )
 {
 	printf("%d,%s,%s\n", c->fighter_id,c->FighterName,c->FighterCallSign);
@@ -29,7 +28,7 @@ void print_fighter( struct FighterJet *c )
 
 
 // Use get_rec_by_key function to retrieve fighter
-int search_fighter( int fighter_id, struct FighterJet *c )
+int search_fighter_by_id( int fighter_id, struct FighterJet *c )
 {
 	return PDS_get_parent_by_key( fighter_id, c );
 }
