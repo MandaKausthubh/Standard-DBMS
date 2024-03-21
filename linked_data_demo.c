@@ -107,10 +107,10 @@ void process_option2()
 
     if(count > 10000) {printf("Too Many Records to Handle\n"); exit(1);}
 
-    for(int i = 0; i < count; i++) {
+    for(int i = 0; i < count-1; i++) {
         struct Missile newMissile;
         search_missile(arr[i], &newMissile);
         print_missile(&newMissile);
     }
-    printf("Exiting Search: %d\n", count);
+    // printf("Exiting Search: %d\n", count);
 }

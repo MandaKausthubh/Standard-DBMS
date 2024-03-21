@@ -215,7 +215,7 @@ int PDS_get_links(int p_key, int arr[], int* count) {
         while(!feof(fptr)) {
             struct Link temp;
             fread(&temp, sizeof(struct Link), 1, fptr);
-            printf("Reading: %d %d\n", temp.parent, temp.child);
+            // printf("Reading: %d %d\n", temp.parent, temp.child);
             if(temp.parent == p_key) {arr[(*count)++] = temp.child;}
         }
         return PDS_SUCCESS;
