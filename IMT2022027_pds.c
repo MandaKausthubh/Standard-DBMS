@@ -256,21 +256,15 @@ int PDS_Close() {
     if(pds_repo_info.pds_repo_status == PDS_REPO_OPEN) {
         char FileName[30]; strcpy(FileName, pds_repo_info.pds_name);
         strcat(FileName, ".ndx");
-
         FILE* fptr = fopen(FileName, "wb+");
-
         fwrite(&(pds_repo_info.rec_count_parents), sizeof(int), 1, fptr);
-
         PrintIntoFile(pds_repo_info.pds_bst, fptr);
-
         bst_destroy(pds_repo_info.pds_bst);
-
         fclose(pds_repo_info.ndx_file);
         fclose(pds_repo_info.parent_data_file);
         fclose(pds_repo_info.ndx_file);
         fclose(pds_repo_info.child_data_file);
         fclose(fptr);
-
         pds_repo_info.pds_repo_status = PDS_REPO_CLOSED;
         return PDS_SUCCESS;
     } else return PDS_REPO_NOT_OPEN;
